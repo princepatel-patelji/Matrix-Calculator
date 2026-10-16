@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PRINCE - Pro Matrix Calculator</title>
+    
+    <!-- PWA Links: Isse app mobile me install hogi -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Dark Mode (Default) */
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --primary: #8b5cf6;
+            --primary-hover: #7c3aed;
+            --accent: #06b6d4;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --input-bg: #1e293b;
+            --input-border: rgba(255, 255, 255, 0.15);
+            --matrix-bg: rgba(15, 23, 42, 0.6);
+            --history-bg: rgba(30, 41, 59, 0.9);
+            --error: #ef4444;
+            --success: #10b981;
+        }
+
+        .light-mode {
+            /* Light Mode Variables */
+            --bg-color: #f1f5f9;
+            --card-bg: rgba(255, 255, 255, 0.9);
+            --primary: #6d28d9;
+            --primary-hover: #5b21b6;
+            --accent: #0284c7;
+            --text: #0f172a;
+            --text-muted: #475569;
+            --input-bg: #f8fafc;
+            --input-border: rgba(0, 0, 0, 0.2);
+            --matrix-bg: rgba(241, 245, 249, 0.8);
+            --history-bg: rgba(255, 255, 255, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background: var(--bg-color);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Hide Number Input Spinners */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield; 
+        }
+
+        header {
+            width: 100%;
+            max-width: 900px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .brand-section h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .theme-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text);
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--input-border);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        select, input[type="number"] {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        select:focus, input[type="number"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 8px rgba(6, 182, 212, 0.4);
+        }
+
+        .matrices-wrapper {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            margin-bottom: 25px;
+        }
+
+        .matrix-box {
+            flex: 1;
+            min-width: 260px;
+            background: var(--matrix-bg);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid var(--input-border);
+        }
+
+        .matrix-box h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--accent);
+            text-align: center;
+        }
+
+        .matrix-grid {
+            display: grid;
+            gap: 8px;
+            justify-content: center;
+        }
+
+        .matrix-grid input {
+            width: 60px;
+            height: 50px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1rem;
+            border-radius: 8px;
+        }
+
+        .btn-calc {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            margin-bottom: 20px;
+        }
+
+        .btn-calc:active {
+            transform: scale(0.98);
+        }
+
+        .result-section {
+            padding: 20px;
+            background: var(--matrix-bg);
+            border-radius: 15px;
+            border-left: 4px solid var(--accent);
+            display: none;
+        }
+        .result-section.active { display: block; }
+
+        .result-title { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 12px; }
+        .result-display { font-size: 1.2rem; font-weight: 600; }
+
+        .result-matrix-grid {
+            display: inline-grid;
+            gap: 10px;
+            padding: 12px;
+            background: var(--bg-color);
+            border-radius: 10px;
+            border: 1px solid var(--input-border);
+        }
+
+        .result-cell {
+            width: 50px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--input-bg);
+            border-radius: 6px;
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* History Section */
+        .history-section {
+            width: 100%;
+            max-width: 900px;
+            margin-top: 20px;
+            background: var(--history-bg);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid var(--input-border);
+        }
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            color: var(--accent);
+            font-weight: 700;
+        }
+        .clear-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .history-list {
+            max-height: 250px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .history-item {
+            background: var(--bg-color);
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary);
+            font-size: 0.9rem;
+        }
+
+        footer {
+            margin-top: 30px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-section">
+            <h1>PRINCE MATRIX SUITE</h1>
+        </div>
+        <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+    </header>
+
+    <div class="container">
+        <!-- Controls -->
+        <div class="controls">
+            <div class="control-group">
+                <label>Operations</label>
+                <select id="operation" onchange="handleOpChange()">
+                    <option value="add">Addition (A + B)</option>
+                    <option value="sub">Subtraction (A - B)</option>
+                    <option value="mul">Multiplication (A × B)</option>
+                    <option value="det">Determinant (|A|)</option>
+                    <option value="inverse">Inverse (A⁻¹)</option>
+                    <option value="transpose">Transpose (Aᵀ)</option>
+                    <option value="power">Matrix Power (Aⁿ)</option>
+                    <option value="leftDiagSum">Left Diagonal Sum</option>
+                    <option value="rightDiagSum">Right Diagonal Sum</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>Matrix A Dimensions</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="number" id="rowsA" value="2" min="1" max="5" onchange="buildGrids()">
+                    <span style="align-self: center;">×</span>
+                    <input type="number" id="colsA" value="2" min="1" max="5" onchange="buildGrids()">
+                </div>
+            </div>
+
+            <div class="control-group" id="dimBGroup">
+                <label>Matrix B Dimensions</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="number" id="rowsB" value="2" min="1" max="5" onchange="buildGrids()">
+                    <span style="align-self: center;">×</span>
+                    <input type="number" id="colsB" value="2" min="1" max="5" onchange="buildGrids()">
+                </div>
+            </div>
+
+            <div class="control-group" id="powerGroup" style="display:none;">
+                <label>Power (n)</label>
+                <input type="number" id="powerN" value="2" min="1" max="10">
+            </div>
+        </div>
+
+        <!-- Matrices Input Grids -->
+        <div class="matrices-wrapper">
+            <div class="matrix-box" id="boxA">
+                <h3>Matrix A</h3>
+                <div class="matrix-grid" id="gridA"></div>
+            </div>
+
+            <div class="matrix-box" id="boxB">
+                <h3>Matrix B</h3>
+                <div class="matrix-grid" id="gridB"></div>
+            </div>
+        </div>
+
+        <button class="btn-calc" onclick="calculate()">Calculate Result (Enter)</button>
+
+        <!-- Result Box -->
+        <div class="result-section" id="resultCard">
+            <div class="result-title" id="resultTitle">Result</div>
+            <div class="result-display" id="resultContent"></div>
+        </div>
+    </div>
+
+    <!-- History Panel -->
+    <div class="history-section">
+        <div class="history-header">
+            <span>Calculation History</span>
+            <button class="clear-btn" onclick="clearHistory()">Clear All</button>
+        </div>
+        <div class="history-list" id="historyList">
+            <!-- History items will appear here -->
+        </div>
+    </div>
+
+    <footer>Developed with ❤️ by PRINCE | Pro Matrix Suite</footer>
+
+    <script>
+        // 1. Theme Logic
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            const theme = document.body.classList.contains('light-mode') ? 'light' : 'dark';
+            localStorage.setItem('matrixTheme', theme);
+            // Dynamic PWA theme color change
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', theme === 'light' ? '#f1f5f9' : '#0f172a');
+        }
+        if(localStorage.getItem('matrixTheme') === 'light') {
+            document.body.classList.add('light-mode');
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#f1f5f9');
+        }
+
+        // 2. Initialization & UI Logic
+        window.onload = function() {
+            handleOpChange();
+            loadHistory();
+        };
+
+        function handleOpChange() {
+            const op = document.getElementById('operation').value;
+            const singleMatrixOps = ['leftDiagSum', 'rightDiagSum', 'transpose', 'det', 'inverse', 'power'];
+            const boxB = document.getElementById('boxB');
+            const dimBGroup = document.getElementById('dimBGroup');
+            const powerGroup = document.getElementById('powerGroup');
+
+            if (singleMatrixOps.includes(op)) {
+                boxB.style.display = 'none';
+                dimBGroup.style.opacity = '0.3';
+                dimBGroup.querySelectorAll('input').forEach(i => i.disabled = true);
+            } else {
+                boxB.style.display = 'block';
+                dimBGroup.style.opacity = '1';
+                dimBGroup.querySelectorAll('input').forEach(i => i.disabled = false);
+            }
+
+            powerGroup.style.display = (op === 'power') ? 'flex' : 'none';
+            buildGrids();
+        }
+
+        // 3. Grid Building & Keyboard Logic
+        function buildGrids() {
+            const rA = parseInt(document.getElementById('rowsA').value) || 2;
+            const cA = parseInt(document.getElementById('colsA').value) || 2;
+            const rB = parseInt(document.getElementById('rowsB').value) || 2;
+            const cB = parseInt(document.getElementById('colsB').value) || 2;
+
+            createGrid('gridA', rA, cA, 'a');
+            createGrid('gridB', rB, cB, 'b');
+        }
+
+        function createGrid(containerId, rows, cols, prefix) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+            container.style.gridTemplateColumns = `repeat(${cols}, 60px)`;
+
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.id = `${prefix}_${i}_${j}`;
+                    input.value = '0';
+                    input.className = 'matrix-input';
+                    
+                    // ENTER KEY LOGIC
+                    input.addEventListener('keydown', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            let allInputs = Array.from(document.querySelectorAll('.matrix-input:not([disabled])'));
+                            let visibleInputs = allInputs.filter(inp => inp.offsetParent !== null);
+                            let index = visibleInputs.indexOf(this);
+                            if (index > -1 && index < visibleInputs.length - 1) {
+                                visibleInputs[index + 1].focus(); // Move to next
+                            } else {
+                                calculate(); // Last input -> Calculate
+                            }
+                        }
+                    });
+
+                    container.appendChild(input);
+                }
+            }
+        }
+
+        function getMatrixData(prefix, rows, cols) {
+            let matrix = [];
+            for (let i = 0; i < rows; i++) {
+                let row = [];
+                for (let j = 0; j < cols; j++) {
+                    let val = parseFloat(document.getElementById(`${prefix}_${i}_${j}`).value) || 0;
+                    row.push(val);
+                }
+                matrix.push(row);
+            }
+            return matrix;
+        }
+
+        function displayMatrixResult(matrix) {
+            const rows = matrix.length;
+            const cols = matrix[0].length;
+            let html = `<div class="result-matrix-grid" style="grid-template-columns: repeat(${cols}, 50px);">`;
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    let val = Number.isInteger(matrix[i][j]) ? matrix[i][j] : matrix[i][j].toFixed(2);
+                    html += `<div class="result-cell">${val}</div>`;
+                }
+            }
+            html += `</div>`;
+            return html;
+        }
+
+        // 4. Core Math Functions
+        function getDeterminant(M) {
+            if (M.length === 1) return M[0][0];
+            if (M.length === 2) return (M[0][0] * M[1][1]) - (M[0][1] * M[1][0]);
+            if (M.length === 3) {
+                return M[0][0] * (M[1][1] * M[2][2] - M[1][2] * M[2][1])
+                     - M[0][1] * (M[1][0] * M[2][2] - M[1][2] * M[2][0])
+                     + M[0][2] * (M[1][0] * M[2][1] - M[1][1] * M[2][0]);
+            }
+            return null; 
+        }
+
+        function multiplyMatrices(A, B) {
+            let rA = A.length, cA = A[0].length, cB = B[0].length;
+            let C = Array(rA).fill().map(() => Array(cB).fill(0));
+            for (let i = 0; i < rA; i++) {
+                for (let j = 0; j < cB; j++) {
+                    for (let k = 0; k < cA; k++) {
+                        C[i][j] += A[i][k] * B[k][j];
+                    }
+                }
+            }
+            return C;
+        }
+
+        function calculate() {
+            const op = document.getElementById('operation').value;
+            const opName = document.getElementById('operation').options[document.getElementById('operation').selectedIndex].text;
+            const rA = parseInt(document.getElementById('rowsA').value);
+            const cA = parseInt(document.getElementById('colsA').value);
+            const A = getMatrixData('a', rA, cA);
+
+            let resTitle = opName;
+            let resHtml = "";
+
+            try {
+                if (op === 'add' || op === 'sub' || op === 'mul') {
+                    const rB = parseInt(document.getElementById('rowsB').value);
+                    const cB = parseInt(document.getElementById('colsB').value);
+                    const B = getMatrixData('b', rB, cB);
+
+                    if (op === 'add' || op === 'sub') {
+                        if (rA !== rB || cA !== cB) throw "Matrices must have same dimensions.";
+                        let C = Array(rA).fill().map(() => Array(cA).fill(0));
+                        for (let i=0; i<rA; i++) for (let j=0; j<cA; j++) 
+                            C[i][j] = op === 'add' ? A[i][j] + B[i][j] : A[i][j] - B[i][j];
+                        resHtml = displayMatrixResult(C);
+                    } 
+                    else if (op === 'mul') {
+                        if (cA !== rB) throw "Cols of A must equal Rows of B.";
+                        resHtml = displayMatrixResult(multiplyMatrices(A, B));
+                    }
+                }
+                else if (op === 'transpose') {
+                    let T = Array(cA).fill().map(() => Array(rA).fill(0));
+                    for (let i=0; i<rA; i++) for (let j=0; j<cA; j++) T[j][i] = A[i][j];
+                    resHtml = displayMatrixResult(T);
+                }
+                else if (op === 'det') {
+                    if (rA !== cA || rA > 3) throw "Supported for 2x2 or 3x3 square matrices only.";
+                    resHtml = `<span style="color:var(--success);">${getDeterminant(A)}</span>`;
+                }
+                else if (op === 'inverse') {
+                    if (rA !== cA || rA > 3) throw "Supported for 2x2 or 3x3 square matrices only.";
+                    let det = getDeterminant(A);
+                    if (det === 0) throw "Determinant is 0. Inverse does not exist.";
+                    
+                    let Inv = [];
+                    if (rA === 2) {
+                        Inv = [
+                            [ A[1][1]/det, -A[0][1]/det ],
+                            [ -A[1][0]/det, A[0][0]/det ]
+                        ];
+                    } else if (rA === 3) {
+                        Inv = [
+                            [(A[1][1]*A[2][2] - A[1][2]*A[2][1])/det, -(A[0][1]*A[2][2] - A[0][2]*A[2][1])/det, (A[0][1]*A[1][2] - A[0][2]*A[1][1])/det],
+                            [-(A[1][0]*A[2][2] - A[1][2]*A[2][0])/det, (A[0][0]*A[2][2] - A[0][2]*A[2][0])/det, -(A[0][0]*A[1][2] - A[0][2]*A[1][0])/det],
+                            [(A[1][0]*A[2][1] - A[1][1]*A[2][0])/det, -(A[0][0]*A[2][1] - A[0][1]*A[2][0])/det, (A[0][0]*A[1][1] - A[0][1]*A[1][0])/det]
+                        ];
+                    }
+                    resHtml = displayMatrixResult(Inv);
+                }
+                else if (op === 'power') {
+                    if (rA !== cA) throw "Square matrix required for powers.";
+                    let n = parseInt(document.getElementById('powerN').value) || 1;
+                    let C = A;
+                    for(let p = 1; p < n; p++) C = multiplyMatrices(C, A);
+                    resTitle = `Matrix Power (A^${n})`;
+                    resHtml = displayMatrixResult(C);
+                }
+                else if (op === 'leftDiagSum' || op === 'rightDiagSum') {
+                    if (rA !== cA) throw "Square Matrix Required!";
+                    let sum = 0;
+                    for (let i=0; i<rA; i++) sum += (op === 'leftDiagSum') ? A[i][i] : A[i][rA - 1 - i];
+                    resHtml = `<span style="color:var(--success);">${sum}</span>`;
+                }
+
+                showResult(resTitle, resHtml);
+                saveHistory(resTitle, resHtml);
+
+            } catch (err) {
+                showResult("Error", `<span style='color:var(--error);'>[Error] ${err}</span>`);
+            }
+        }
+
+        function showResult(title, content) {
+            const card = document.getElementById('resultCard');
+            document.getElementById('resultTitle').innerText = title;
+            document.getElementById('resultContent').innerHTML = content;
+            card.classList.add('active');
+        }
+
+        // 5. History Implementation
+        function saveHistory(title, html) {
+            let history = JSON.parse(localStorage.getItem('matrixHistory')) || [];
+            let time = new Date().toLocaleTimeString();
+            history.unshift({ time: time, title: title, result: html });
+            if(history.length > 10) history.pop(); // Keep only last 10
+            localStorage.setItem('matrixHistory', JSON.stringify(history));
+            loadHistory();
+        }
+
+        function loadHistory() {
+            let history = JSON.parse(localStorage.getItem('matrixHistory')) || [];
+            const list = document.getElementById('historyList');
+            list.innerHTML = '';
+            if (history.length === 0) {
+                list.innerHTML = '<div class="history-item">No history yet. Calculate something!</div>';
+                return;
+            }
+            history.forEach(item => {
+                list.innerHTML += `
+                    <div class="history-item">
+                        <div style="font-size:0.75rem; color:var(--text-muted);">${item.time}</div>
+                        <strong>${item.title}</strong>
+                        <div style="margin-top:8px; transform: scale(0.85); transform-origin: left top;">${item.result}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function clearHistory() {
+            localStorage.removeItem('matrixHistory');
+            loadHistory();
+        }
+    </script>
+    
+    <!-- PWA Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('service-worker.js')
+            .then(registration => console.log('Service Worker Registered!'))
+            .catch(err => console.log('Service Worker failed: ', err));
+        });
+      }
+    </script>
+</body>
+</html>
